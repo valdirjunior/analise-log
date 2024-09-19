@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "cmath": "c"
+        "cmath": "c",
+        "stdlib.h": "c",
+        "filatarefa.h": "c",
+        "tarefa.h": "c"
     }
 }

@@ -7,7 +7,11 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}/main.c",
+                "${workspaceFolder}/src/FilaTarefa.c",
+                "${workspaceFolder}/src/Log.c",
+                "${workspaceFolder}/src/OutputData.c",
+                "${workspaceFolder}/src/Tarefa.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
