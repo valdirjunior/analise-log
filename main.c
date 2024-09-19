@@ -7,9 +7,9 @@
 #include "src/Log.h"
 #include "src/FilaTarefa.h"
 
-#define NUM_THREADS 12
+#define NUM_THREADS 4
 #define NUM_LOGS_POR_TAREFA 1000
-#define BUFFER_SIZE 1024
+// #define BUFFER_SIZE 580
 
 // int cont_logs[3][24][2] = {0};
 
@@ -75,6 +75,7 @@ int main() {
     pthread_mutex_destroy(&mutex);
     pthread_cond_destroy(&fila_aviso);
 
+    int totalLogs, totalLogs200;
     // Escrever os resultados:
     for(int i = 0; i < 3; i++) {
         int dia;
@@ -91,12 +92,15 @@ int main() {
         default:
             break;
         }
-        printf("Logs no dia %d/Jan/2024:\n\n", dia);
-        // for (int j = 0; j < 24; j++) {
-        //     printf("%d Horas: %d || Status 200: %d \n", j, cont_logs[i][j][0], cont_logs[i][j][1]);
-        // }
+        printf("\nLogs no dia %d/Jan/2019:\n\n", dia);
+        for (int j = 0; j < 24; j++) {
+            printf("%d Horas: %d || Status 200: %d \n", j, outputData->cont[i][j][0], outputData->cont[i][j][1]);
+            totalLogs += outputData->cont[i][j][0];
+            totalLogs200 += outputData->cont[i][j][1];
+        }
         printf("\n\n");
     }
+    printf("Total de acessos: %d || Total de acessos com sucesso: %d\n\n", totalLogs, totalLogs200);
 
     limparFilaTarefas(filaTarefas);
 
@@ -106,10 +110,13 @@ int main() {
 void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputData) {
 
     Tarefa *novaTarefa = NULL;
-    char *line = malloc(sizeof(char) * BUFFER_SIZE);
+    char line[1024];
+    char date[12];
+    char hour[10];
+    int status;
     int i = 0;
 
-    while (fgets(line, BUFFER_SIZE, file)) {
+    while (fgets(line, sizeof(line), file)) {
         if((i % 1000) == 0) {
             if(novaTarefa != NULL) {
                 pthread_mutex_lock(&mutex);
@@ -119,9 +126,11 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
             }
             novaTarefa = criarTarefa();
         }
-        inserirLog(novaTarefa, criarLog(line));
+
+        sscanf(line, "%*[^ ] - %*[^ ] [%[^:]:%[^ ] %*[^]]] \"%*s %*s %*[^\"]\" %d", date, hour, &status);
+        inserirLog(novaTarefa, criarLog(date, hour, status));
         i++;
-        line = malloc(sizeof(char)*512);
+        // line = malloc(sizeof(char)*512);
     }
     pthread_mutex_lock(&mutex);
     filaTarefas->fimArquivo = 1;
