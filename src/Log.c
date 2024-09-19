@@ -4,7 +4,6 @@
 Log *criarLog(char *dia, char *hora, int status)
 {
     Log* newLog = (Log*)malloc(sizeof(Log));
-    // newLog->line = line;
     newLog->hora = hora;
     newLog->dia = dia;
     newLog->status = status;
@@ -15,8 +14,5 @@ Log *criarLog(char *dia, char *hora, int status)
 
 void limparLog(Log* log)
 {
-    // free(log->hora);
-    // free(log->dia);
-    // free(log->status);
     free(log);
 }

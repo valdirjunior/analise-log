@@ -51,12 +51,9 @@ Log* removerLog(Tarefa* tarefa)
 }
 
 void processarTarefa(Tarefa *tarefa) {
-    // char date[12];
-    // char hour[10];
     int dia, hora, status;
     Log *aux = tarefa->head;
     while (NULL != aux) {
-        // sscanf(aux->line, "%*[^ ] - %*[^ ] [%[^:]:%[^ ] %*[^]]] \"%*s %*s %*[^\"]\" %d", date, hour, &status);
         sscanf(aux->dia, "%d/%*d/%*d", &dia);
         sscanf(aux->hora, "%d:%*d:%*d", &hora);
         status = aux->status;
@@ -84,5 +81,4 @@ void processarTarefa(Tarefa *tarefa) {
         }
         limparLog(removerLog(tarefa));
     }
-    // printf("Tarefa concluida\n");
 }

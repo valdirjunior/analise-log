@@ -9,19 +9,11 @@
 
 #define NUM_THREADS 4
 #define NUM_LOGS_POR_TAREFA 1000
-// #define BUFFER_SIZE 580
 
-// int cont_logs[3][24][2] = {0};
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_saida = PTHREAD_MUTEX_INITIALIZER;
-// pthread_mutex_t fila_mutex;
-// pthread_mutex_t cont_mutex;
 pthread_cond_t fila_aviso = PTHREAD_COND_INITIALIZER;
-
-// typedef struct sContador{
-//     int cont[3][24][2];
-// } Contador;
 
 typedef struct {
     FilaTarefas* filaTarefas;
@@ -29,17 +21,8 @@ typedef struct {
 } ThreadArgs;
 
 ThreadArgs* criarThreadArgs(FilaTarefas*, OutputData*);
-
 void processarArquivo(FILE*, FilaTarefas*, OutputData*);
-
-// void limpaFila(FilaTarefas*);
-// void limparTarefa(Tarefa*);
-
-// void insereNaFila(FilaTarefas*, Tarefa*);
 void* thread_function(void*);
-// void contaLogs(Tarefa*, Contador*);
-// Contador* criaContador(int);
-// void insereLinhaTarefa(Tarefa*, char*);
 
 int main() {
     FILE *file;
@@ -130,7 +113,6 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
         sscanf(line, "%*[^ ] - %*[^ ] [%[^:]:%[^ ] %*[^]]] \"%*s %*s %*[^\"]\" %d", date, hour, &status);
         inserirLog(novaTarefa, criarLog(date, hour, status));
         i++;
-        // line = malloc(sizeof(char)*512);
     }
     pthread_mutex_lock(&mutex);
     filaTarefas->fimArquivo = 1;
@@ -138,27 +120,6 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
     pthread_mutex_unlock(&mutex);
 }
 
-// void limpaFila(FilaTarefas* filaTarefas) {
-//     Tarefa* task = filaTarefas->head;
-//     Tarefa* taskTemp;
-//     while(task != NULL) {
-//         taskTemp = task;
-//         task = task->next;
-//         limparTarefa(taskTemp);
-//     }
-//     free(filaTarefas);
-// }
-
-// void limparTarefa(Tarefa* tarefa) {
-//     Log* log = tarefa->head;
-//     Log* logTemp;
-//     while(log != NULL) {
-//         logTemp = log;
-//         log = log->next;
-//         free(logTemp);
-//     }
-//     free(tarefa);
-// }
 
 
 void *thread_function(void *arg) {
@@ -167,17 +128,7 @@ void *thread_function(void *arg) {
     OutputData *outputData = ((ThreadArgs*)arg)->outputData;
     Tarefa* tarefa;
 
-    // Contador *contThread = (Contador*)malloc(sizeof(Contador));
-    // for(int i = 0; i < 3; i++) {
-    //     for(int j = 0; j < 24; j++) {
-    //         for(int k = 0; k < 0; k++){
-    //             contThread->cont[i][j][k] = 0;
-    //         }
-    //     }
-    // }
-
     while (1) {
-
         pthread_mutex_lock(&mutex);
         while ((filaTarefas->size == 0) && (!filaTarefas->fimArquivo)) {
             pthread_cond_wait(&fila_aviso, &mutex);
@@ -194,48 +145,10 @@ void *thread_function(void *arg) {
         contabilizarDados(outputData, tarefa->outputData);
         pthread_mutex_unlock(&mutex_saida);
         limparTarefa(tarefa);
-
-        // if(NULL != filaTarefas->head) {
-        //     int tamanhoTarefa = filaTarefas->head->size;
-        //     if((tamanhoTarefa % NUM_LOGS_POR_TAREFA) == 0) {
-        //         Tarefa *task = removerTarefa(filaTarefas);
-
-
-        //         contaLogs(task, contThread);
-
-        //         limparTarefa(task);
-        //     }
-        // } else {
-        //     if (filaTarefas->fimArquivo) {
-        //         pthread_mutex_unlock(&mutex);
-        //         break;
-        //     }
-        // }
     }
     pthread_mutex_unlock(&mutex);
-    // for(int i = 0; i < 3; i++) {
-    //     for(int j = 0; j < 24; j++) {
-    //         for(int k = 0; k < 0; k++){
-    //            cont_logs[i][j][k] += contThread->cont[i][j][k];
-    //         }
-    //     }
-    // }
     return NULL;
 }
-
-// void insereLinhaTarefa(Tarefa *tarefa, char *line) {
-//     if(tarefa->head != NULL) {
-//         Log *newLog = criarLog(line);
-//         tarefa->tail->next = newLog;
-//         tarefa->tail = tarefa->tail->next;
-//         tarefa->size++;
-//     } else {
-//         Log *newLog = criarLog(line);
-//         tarefa->head = newLog;
-//         tarefa->tail = tarefa->head;
-//         tarefa->size++;
-//     }
-// }
 
 ThreadArgs* criarThreadArgs(FilaTarefas* filaTarefas, OutputData* outputData)
 {

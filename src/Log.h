@@ -2,7 +2,6 @@
 #define Log_h
 
 typedef struct sLog {
-    // char *line;
     char *hora;
     char *dia;
     int status;
