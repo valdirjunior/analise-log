@@ -110,7 +110,7 @@ int main() {
 void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputData) {
 
     Tarefa *novaTarefa = NULL;
-    char line[1024];
+    char line[4096];
     char date[12];
     char hour[10];
     int status;
