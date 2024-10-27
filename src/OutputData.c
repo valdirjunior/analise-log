@@ -1,6 +1,7 @@
 #include "OutputData.h"
 #include <stdlib.h>
 
+//Inicializa o contador
 OutputData *criarOutputData()
 {
     OutputData* outputData;
@@ -16,6 +17,7 @@ OutputData *criarOutputData()
     return outputData;
 }
 
+//Percorre os dados e soma ao total
 void contabilizarDados(OutputData* outputData, OutputData* outputDataTarefa)
 {
     int i, j, k;

@@ -1,6 +1,7 @@
 #include "Log.h"
 #include <stdlib.h>
 
+//Cria um novo log
 Log *criarLog(int dia, int hora, int status)
 {
     Log* newLog = (Log*)malloc(sizeof(Log));
@@ -12,6 +13,7 @@ Log *criarLog(int dia, int hora, int status)
     return newLog;
 }
 
+//Limpa um log
 void limparLog(Log* log)
 {
     free(log);

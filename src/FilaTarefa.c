@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "FilaTarefa.h"
 
+//Inicializa uma nova tarefa
 FilaTarefas *criarFilaTarefas()
 {
     FilaTarefas *filaTarefas = NULL;
@@ -14,6 +15,7 @@ FilaTarefas *criarFilaTarefas()
     return filaTarefas;
 }
 
+//Limpa a fila de tarefas
 void limparFilaTarefas(FilaTarefas* filaTarefas)
 {
     Tarefa* tarefa;
@@ -23,6 +25,7 @@ void limparFilaTarefas(FilaTarefas* filaTarefas)
     }
 }
 
+//Remove a tarefa da fila e retorna a mesma
 Tarefa *removerTarefa(FilaTarefas *filaTarefas)
 {
     Tarefa *aux = filaTarefas->head;
@@ -31,6 +34,7 @@ Tarefa *removerTarefa(FilaTarefas *filaTarefas)
     return aux;
 }
 
+//Insere uma nova tarefa na fila 
 void inserirTarefa(FilaTarefas *filaTarefas, Tarefa *tarefa)
 {
     if(filaTarefas->head != NULL) {

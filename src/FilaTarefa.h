@@ -2,6 +2,7 @@
 #define FilaTarefa_h
 #include "Tarefa.h"
 
+//Estrutura base da fila de Tarefas
 typedef struct sFilaTarefas {
     struct sTarefa *head;
     struct sTarefa *tail;

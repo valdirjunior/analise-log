@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "OutputData.h"
 
+//Estrutura base da Tarefa
 typedef struct sTarefa {
     Log *head;
     Log *tail;

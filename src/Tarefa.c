@@ -4,6 +4,7 @@
 #include "OutputData.h"
 #include "Log.h"
 
+//Inicializa uma noca tarefa
 Tarefa *criarTarefa()
 {
     Tarefa *novaTarefa = (Tarefa *)malloc(sizeof(Tarefa));
@@ -17,6 +18,7 @@ Tarefa *criarTarefa()
     return novaTarefa;
 }
 
+//Limpa uma tarefa
 void limparTarefa(Tarefa *tarefa)
 {
     Log* log;
@@ -26,6 +28,7 @@ void limparTarefa(Tarefa *tarefa)
     free(tarefa);
 }
 
+//Insere um log na tarefa
 void inserirLog(Tarefa* tarefa, Log* log)
 {
     if (tarefa->head == NULL) {
@@ -38,6 +41,7 @@ void inserirLog(Tarefa* tarefa, Log* log)
     }
 }
 
+//Remove um log da tarefa
 Log* removerLog(Tarefa* tarefa)
 {
     Log* log = tarefa->head;
@@ -50,13 +54,11 @@ Log* removerLog(Tarefa* tarefa)
     return log;
 }
 
+//Faz a filtragem das informações, separando por dia, hora, e verificando o status
 void processarTarefa(Tarefa *tarefa) {
     int dia, hora, status;
-    // char status_char[3];
     Log *aux = tarefa->head;
     while (NULL != aux) {
-        // sscanf(aux->dia, "%d/%*d/%*d", &dia);
-        // sscanf(aux->hora, "%d:%*d:%*d", &hora);
         dia = aux->dia;
         hora = aux->hora;
         status = aux->status;
