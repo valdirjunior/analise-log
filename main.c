@@ -95,7 +95,7 @@ int main() {
 void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputData) {
 
     Tarefa *novaTarefa = NULL;
-    char line[4096];
+    char line[32768];
     // char date[12];
     // char hour[10];
     int status, date, hour;
@@ -126,24 +126,17 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
 
 void processarArquivoREGEX(FILE* file, FilaTarefas* filaTarefas, OutputData* outputData) {
     Tarefa* novaTarefa = NULL;
-    char line[4096];
+    char line[32768];
     regex_t regex;
     regmatch_t matches[4];
     int status, date, hour;
     int i = 0;
 
-    // "^[^ ]+ - - \\[([0-9]{2})/[^/]+/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2} [^]]+\\] \".*?\" ([0-9]{3})"
-    // ^[0-9.]+ - - \[([0-9]{2})/[A-Za-z]{3}/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2} [+-][0-9]+\] ".*?" ([0-9]{3}) 
-
-    // "^[0-9\\.]+\\s-\\s-\\s\\[([0-9]{2})/[A-Za-z]{3}/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2}\\s[+\\-0-9]+\\]\\s\"[^\"]*\"\\s([0-9]{3})\\s" 
-    // "^([0-9\\.]*)(?:\\s[^\\s]*\\s[^\\s]*\\s)(?:\\[)(\\d{2})(?:\\/)([a-zA-z]{3})(?:\\/)(\\d{4})(?:\\:)(\\d{2})(?:\\:)(\\d{2})(?:\\:)(\\d{2})(?:\\s)([\\+\\d]*)(?:\\])(?:\\s\")([^\"]*)(?:\"\\s)([\\d]*)(?:\\s)([\\d]*)(?:\\s\")([^\"]*\")(?:\\s\")([^\"]*\")(?:\\s\")(.[^\"]*\")$"
-    int erro = regcomp(&regex, "^[^ ]+ - [^ ]+ \[([0-9]{2})[^:]+:([0-9]{2})[^\"]+\"[^\"]+\" ([0-9]{3}) [^$]+", REG_EXTENDED);
-    if (erro != 0) {
-        char error_message[256];
-        regerror(erro, &regex, error_message, sizeof(error_message));
-        fprintf(stderr, "Erro ao compilar regex: %s\n", error_message);
+    if (regcomp(&regex, "^[^ ]+ - [^ ]+ \\[([0-9]{2})/[^/]+/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2} [^]]+\\] \".*?\" ([0-9]{3})", REG_EXTENDED)) {
+        fprintf(stderr, "Erro na compilacao da expressao regular.\n");
         exit(1);
-    } 
+    }
+
     while (fgets(line, sizeof(line), file)) {
         if((i % NUM_LOGS_POR_TAREFA) == 0) {
             if(novaTarefa != NULL) {
