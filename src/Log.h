@@ -2,14 +2,14 @@
 #define Log_h
 
 typedef struct sLog {
-    char *hora;
-    char *dia;
+    int hora;
+    int dia;
     int status;
     struct sLog *next;
     struct sLog *prev;
 } Log;
 
-Log* criarLog(char*, char*, int);
+Log* criarLog(int, int, int);
 void limparLog(Log*);
 
 #endif

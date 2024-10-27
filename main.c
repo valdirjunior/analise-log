@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <regex.h>
 
 #include "src/Log.h"
 #include "src/FilaTarefa.h"
 
 #define NUM_THREADS 4
 #define NUM_LOGS_POR_TAREFA 1000
-
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_saida = PTHREAD_MUTEX_INITIALIZER;
@@ -22,7 +22,9 @@ typedef struct {
 
 ThreadArgs* criarThreadArgs(FilaTarefas*, OutputData*);
 void processarArquivo(FILE*, FilaTarefas*, OutputData*);
+void processarArquivoREGEX(FILE*, FilaTarefas*, OutputData*);
 void* thread_function(void*);
+void imprimirLinhaInvalida(const char*);
 
 int main() {
     FILE *file;
@@ -40,7 +42,7 @@ int main() {
         pthread_create(&threads[i], NULL, thread_function, (void*)criarThreadArgs(filaTarefas, outputData));
     }
 
-    processarArquivo(file, filaTarefas, outputData);
+    processarArquivoREGEX(file, filaTarefas, outputData);
 
     fclose(file);
     while (filaTarefas->size > 0) {
@@ -94,13 +96,13 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
 
     Tarefa *novaTarefa = NULL;
     char line[4096];
-    char date[12];
-    char hour[10];
-    int status;
+    // char date[12];
+    // char hour[10];
+    int status, date, hour;
     int i = 0;
 
     while (fgets(line, sizeof(line), file)) {
-        if((i % 1000) == 0) {
+        if((i % NUM_LOGS_POR_TAREFA) == 0) {
             if(novaTarefa != NULL) {
                 pthread_mutex_lock(&mutex);
                 inserirTarefa(filaTarefas, novaTarefa);
@@ -110,7 +112,9 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
             novaTarefa = criarTarefa();
         }
 
-        sscanf(line, "%*[^ ] - %*[^ ] [%[^:]:%[^ ] %*[^]]] \"%*s %*s %*[^\"]\" %d", date, hour, &status);
+        // sscanf(line, "%*[^ ] - %*[^ ] [%[^:]:%[^ ] %*[^]]] \"%*s %*s %*[^\"]\" %d", date, hour, &status);
+        sscanf(line, "%*[^-]- %*[^ ] [%d/%*[^:]:%d%*[^]]] \"%*[^\"]\" %d ", &date, &hour, &status);
+        // printf("Status: %s\n", status);
         inserirLog(novaTarefa, criarLog(date, hour, status));
         i++;
     }
@@ -118,6 +122,57 @@ void processarArquivo(FILE* file, FilaTarefas* filaTarefas, OutputData* outputDa
     filaTarefas->fimArquivo = 1;
 
     pthread_mutex_unlock(&mutex);
+}
+
+void processarArquivoREGEX(FILE* file, FilaTarefas* filaTarefas, OutputData* outputData) {
+    Tarefa* novaTarefa = NULL;
+    char line[4096];
+    regex_t regex;
+    regmatch_t matches[4];
+    int status, date, hour;
+    int i = 0;
+
+    // "^[^ ]+ - - \\[([0-9]{2})/[^/]+/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2} [^]]+\\] \".*?\" ([0-9]{3})"
+    // ^[0-9.]+ - - \[([0-9]{2})/[A-Za-z]{3}/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2} [+-][0-9]+\] ".*?" ([0-9]{3}) 
+
+    // "^[0-9\\.]+\\s-\\s-\\s\\[([0-9]{2})/[A-Za-z]{3}/[0-9]{4}:([0-9]{2}):[0-9]{2}:[0-9]{2}\\s[+\\-0-9]+\\]\\s\"[^\"]*\"\\s([0-9]{3})\\s" 
+    // "^([0-9\\.]*)(?:\\s[^\\s]*\\s[^\\s]*\\s)(?:\\[)(\\d{2})(?:\\/)([a-zA-z]{3})(?:\\/)(\\d{4})(?:\\:)(\\d{2})(?:\\:)(\\d{2})(?:\\:)(\\d{2})(?:\\s)([\\+\\d]*)(?:\\])(?:\\s\")([^\"]*)(?:\"\\s)([\\d]*)(?:\\s)([\\d]*)(?:\\s\")([^\"]*\")(?:\\s\")([^\"]*\")(?:\\s\")(.[^\"]*\")$"
+    int erro = regcomp(&regex, "^[^ ]+ - [^ ]+ \[([0-9]{2})[^:]+:([0-9]{2})[^\"]+\"[^\"]+\" ([0-9]{3}) [^$]+", REG_EXTENDED);
+    if (erro != 0) {
+        char error_message[256];
+        regerror(erro, &regex, error_message, sizeof(error_message));
+        fprintf(stderr, "Erro ao compilar regex: %s\n", error_message);
+        exit(1);
+    } 
+    while (fgets(line, sizeof(line), file)) {
+        if((i % NUM_LOGS_POR_TAREFA) == 0) {
+            if(novaTarefa != NULL) {
+                pthread_mutex_lock(&mutex);
+                inserirTarefa(filaTarefas, novaTarefa);
+                pthread_mutex_unlock(&mutex);
+                pthread_cond_signal(&fila_aviso);
+            }
+            novaTarefa = criarTarefa();
+        }
+        if (regexec(&regex, line, 4, matches, 0) == 0) {
+            line[matches[1].rm_eo] = '\0';
+            date = atoi(line + matches[1].rm_so);
+            line[matches[2].rm_eo] = '\0';
+            hour = atoi(line + matches[2].rm_so);
+            line[matches[3].rm_eo] = '\0';
+            status = atoi(line + matches[3].rm_so);
+
+            inserirLog(novaTarefa, criarLog(date, hour, status));
+        } else {
+            imprimirLinhaInvalida(line);
+        }
+        i++;
+    }
+    pthread_mutex_lock(&mutex);
+    filaTarefas->fimArquivo = 1;
+    pthread_mutex_unlock(&mutex);
+
+    regfree(&regex);
 }
 
 
@@ -157,4 +212,8 @@ ThreadArgs* criarThreadArgs(FilaTarefas* filaTarefas, OutputData* outputData)
     threadArgs->filaTarefas = filaTarefas;
     threadArgs->outputData = outputData;
     return threadArgs;
+}
+
+void imprimirLinhaInvalida(const char* linha) {
+    fprintf(stderr, "Linha inválida: %s\n", linha);
 }

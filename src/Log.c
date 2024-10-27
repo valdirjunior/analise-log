@@ -1,7 +1,7 @@
 #include "Log.h"
 #include <stdlib.h>
 
-Log *criarLog(char *dia, char *hora, int status)
+Log *criarLog(int dia, int hora, int status)
 {
     Log* newLog = (Log*)malloc(sizeof(Log));
     newLog->hora = hora;

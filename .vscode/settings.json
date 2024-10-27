@@ -3,6 +3,9 @@
         "cmath": "c",
         "stdlib.h": "c",
         "filatarefa.h": "c",
-        "tarefa.h": "c"
+        "tarefa.h": "c",
+        "unistd.h": "c",
+        "regex.h": "c",
+        "ostream": "cpp"
     }
 }
