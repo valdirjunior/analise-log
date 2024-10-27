@@ -161,6 +161,13 @@ void processarArquivoREGEX(FILE* file, FilaTarefas* filaTarefas, OutputData* out
         }
         i++;
     }
+
+    if (novaTarefa != NULL) {
+        pthread_mutex_lock(&mutex);
+        inserirTarefa(filaTarefas, novaTarefa);
+        pthread_mutex_unlock(&mutex);
+        pthread_cond_signal(&fila_aviso);
+    }
     pthread_mutex_lock(&mutex);
     filaTarefas->fimArquivo = 1;
     pthread_mutex_unlock(&mutex);
@@ -181,7 +188,7 @@ void *thread_function(void *arg) {
         while ((filaTarefas->size == 0) && (!filaTarefas->fimArquivo)) {
             pthread_cond_wait(&fila_aviso, &mutex);
         }
-        if (filaTarefas->fimArquivo == 1) {
+        if ((filaTarefas->fimArquivo == 1) && filaTarefas->size == 0) {
             break;
         }
 
